@@ -6,8 +6,8 @@ const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
 
 export const resolveConflicts = async (tasks: Task[], rule: PriorityRule): Promise<Task[]> => {
   let strategyDescription = "";
-  
-  switch(rule) {
+
+  switch (rule) {
     case 'urgency':
       strategyDescription = "Focus on URGENCY: Preserve original start times as much as possible for high-priority tasks, moving others only when absolutely necessary.";
       break;
@@ -37,7 +37,7 @@ export const resolveConflicts = async (tasks: Task[], rule: PriorityRule): Promi
 
   try {
     const response = await ai.models.generateContent({
-      model: 'gemini-3-flash-preview',
+      model: 'gemini-2.0-flash',
       contents: prompt,
       config: {
         responseMimeType: "application/json",
@@ -73,7 +73,7 @@ export const resolveConflicts = async (tasks: Task[], rule: PriorityRule): Promi
 function fallbackResolver(tasks: Task[]): Task[] {
   const sorted = [...tasks].sort((a, b) => b.priority - a.priority || a.startTime - b.startTime);
   const resolved: Task[] = [];
-  
+
   let currentEnd = 8;
   sorted.forEach(task => {
     const newStart = Math.max(8, currentEnd);
