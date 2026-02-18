@@ -8,6 +8,9 @@ export const INITIAL_TASKS: Task[] = [
     startTime: 9,
     duration: 2,
     type: 'Work',
+    urgency: 4,
+    importance: 5,
+    energyLevel: 4,
     manaCost: 40,
     priority: 4,
   },
@@ -17,6 +20,9 @@ export const INITIAL_TASKS: Task[] = [
     startTime: 12,
     duration: 1,
     type: 'Health',
+    urgency: 3,
+    importance: 3,
+    energyLevel: 5,
     manaCost: 20,
     priority: 3,
   },
@@ -26,13 +32,16 @@ export const INITIAL_TASKS: Task[] = [
     startTime: 13.5,
     duration: 1,
     type: 'Personal',
-    manaCost: -15, // Restores mana
+    urgency: 2,
+    importance: 2,
+    energyLevel: 1,
+    manaCost: -15,
     priority: 2,
   },
 ];
 
 export const CHAOS_EVENTS = [
-  { title: 'Server Warp Breach', type: 'Work', duration: 1.5, priority: 5, manaCost: 60 },
-  { title: 'Emergency AI Council', type: 'Work', duration: 2, priority: 4, manaCost: 50 },
-  { title: 'Unexpected Wormhole Call', type: 'Personal', duration: 0.5, priority: 3, manaCost: 25 },
+  { title: 'Server Warp Breach', type: 'Work' as const, duration: 1.5, urgency: 5, importance: 5, energyLevel: 5, manaCost: 60, priority: 5 },
+  { title: 'Emergency AI Council', type: 'Work' as const, duration: 2, urgency: 4, importance: 5, energyLevel: 4, manaCost: 50, priority: 4 },
+  { title: 'Unexpected Wormhole Call', type: 'Personal' as const, duration: 0.5, urgency: 4, importance: 2, energyLevel: 2, manaCost: 25, priority: 3 },
 ];
