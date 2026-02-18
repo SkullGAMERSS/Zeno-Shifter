@@ -4,35 +4,37 @@ import { Task, PriorityRule } from "../types";
 
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
 
-export const resolveConflicts = async (tasks: Task[], rule: PriorityRule): Promise<Task[]> => {
+export const resolveConflicts = async (tasks: Task[], globalRule: PriorityRule): Promise<Task[]> => {
   let strategyDescription = "";
-
-  switch (rule) {
+  
+  switch(globalRule) {
     case 'urgency':
-      strategyDescription = "Focus on URGENCY: Preserve original start times as much as possible for high-priority tasks, moving others only when absolutely necessary.";
+      strategyDescription = "GLOBAL STRATEGY: URGENCY. Tasks with the highest individual 'urgency' ratings must be prioritized and kept as close to their original start times as possible. Move low-urgency tasks to fill gaps.";
       break;
     case 'importance':
-      strategyDescription = "Focus on IMPORTANCE: Strictly prioritize tasks with higher 'priority' values (4-5). Low priority tasks (1-2) should be moved to the end of the day if there is a conflict.";
+      strategyDescription = "GLOBAL STRATEGY: STRATEGIC IMPACT. Re-organize the day so that tasks with high 'importance' ratings occupy the most focused slots. Lower importance tasks can be shifted or grouped late in the day.";
       break;
     case 'energy':
-      strategyDescription = "Focus on ENERGY FLOW: Balance 'manaCost'. Avoid back-to-back high mana cost tasks. Insert gaps or 'Personal' tasks between heavy 'Work' blocks to optimize the user's energy.";
+      strategyDescription = "GLOBAL STRATEGY: ENERGY FLOW. Use the 'energyLevel' metric to prevent burnout. Ensure high-energy tasks are not back-to-back. Use low-energy tasks or health tasks as recovery periods.";
       break;
     default:
-      strategyDescription = "Standard balance between work and life.";
+      strategyDescription = "Balanced optimization across all metrics.";
   }
 
   const prompt = `
-    You are ZENO, an advanced AI Time Bender. 
-    Below is a list of tasks with scheduling conflicts.
-    Your job is to re-schedule them to eliminate all overlaps using this strategy: ${strategyDescription}
+    You are ZENO, an advanced AI Time Bender in a sci-fi universe.
+    You have a list of tasks with scheduling conflicts (overlaps).
+    
+    ${strategyDescription}
     
     General Rules:
-    1. Chaos events are top priority and must stay close to their original conflict point.
-    2. Keep task durations EXACTLY the same.
-    3. Start times must be between 08:00 and 22:00.
-    4. Return a valid JSON list of ALL tasks with their new startTime values.
+    1. Resolve all overlaps. No two tasks can happen at the same time.
+    2. Respect the individual Task Metrics (Urgency, Importance, Energy Level).
+    3. Keep durations EXACTLY the same.
+    4. Valid time window: 07:00 to 23:00.
+    5. Return a valid JSON array of ALL tasks with updated 'startTime' values.
 
-    Current Tasks: ${JSON.stringify(tasks)}
+    Task Pool: ${JSON.stringify(tasks)}
   `;
 
   try {
@@ -51,10 +53,13 @@ export const resolveConflicts = async (tasks: Task[], rule: PriorityRule): Promi
               startTime: { type: Type.NUMBER },
               duration: { type: Type.NUMBER },
               type: { type: Type.STRING },
+              urgency: { type: Type.NUMBER },
+              importance: { type: Type.NUMBER },
+              energyLevel: { type: Type.NUMBER },
               manaCost: { type: Type.NUMBER },
               priority: { type: Type.NUMBER },
             },
-            required: ["id", "title", "startTime", "duration", "type", "manaCost", "priority"]
+            required: ["id", "title", "startTime", "duration", "type", "urgency", "importance", "energyLevel", "manaCost", "priority"]
           }
         }
       }
@@ -71,15 +76,13 @@ export const resolveConflicts = async (tasks: Task[], rule: PriorityRule): Promi
 };
 
 function fallbackResolver(tasks: Task[]): Task[] {
-  const sorted = [...tasks].sort((a, b) => b.priority - a.priority || a.startTime - b.startTime);
+  const sorted = [...tasks].sort((a, b) => (b.urgency + b.importance) - (a.urgency + a.importance));
   const resolved: Task[] = [];
-
   let currentEnd = 8;
   sorted.forEach(task => {
     const newStart = Math.max(8, currentEnd);
     resolved.push({ ...task, startTime: newStart });
     currentEnd = newStart + task.duration;
   });
-
   return resolved;
 }

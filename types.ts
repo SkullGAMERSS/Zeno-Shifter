@@ -9,8 +9,11 @@ export interface Task {
   startTime: number; // Hour in 24h format
   duration: number;  // Hours
   type: TaskType;
-  manaCost: number;
-  priority: number; // 1-5
+  urgency: number;    // 1-5
+  importance: number; // 1-5
+  energyLevel: number; // 1-5
+  manaCost: number;   
+  priority: number;   // Calculated weight
 }
 
 export interface PlayerStats {
